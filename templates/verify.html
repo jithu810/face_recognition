@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<head>
+    <title>
+        Verify
+    </title>  
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io();
+        socket.on('connect', function() {
+            socket.emit('my event', {data: 'I\'m connected!'});
+        });
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css')}}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css')}}?v=5">
+</head>
+<body>
+    <video id="video" width="100%" 
+        height="100%" autoplay>
+    </video>  
+    <script>
+        var start = function () {
+            var video = document.getElementById('video'),
+                vendorUrl = window.URL || window.webkitURL;
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        photo(stream);
+                    }).catch(function (error) {
+                        console.log("Something went wrong!");
+                    });
+                    
+                    // socket.on('connect', function() {
+                    // socket.emit('my event', {data: 'I\'m connected!'});
+        }
+            }
+        
+        $(function () {
+            start();
+        });  
+        var photo = (stream)=>{
+            var socket = io();
+            const options = {mimeType: 'video/webm'};
+            const recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream, options);
+
+            mediaRecorder.addEventListener('dataavailable', function(e) {
+            if (e.data.size > 0) {
+                recordedChunks.push(e.data);
+                if(mediaRecorder.state === "recording"){
+                    mediaRecorder.stop();
+                    stream.getTracks().forEach(function(track) {
+                        track.stop();
+                    });
+                }
+                }
+            });
+
+            mediaRecorder.addEventListener("stop",(e)=>{
+                downloadLink = new Blob(recordedChunks,{ 
+                    'type': 'video/webm' 
+                });
+
+                var data = new FormData();
+                data.append('file', downloadLink);
+
+                post_request("http://localhost:5000/videos",data,after_function);
+                //socket.send(downloadLink);
+                //socket.send(data);
+            });
+
+            function after_function(responce){
+                console.log(responce);
+            }
+            mediaRecorder.start(10000);
+
+
+            }
+
+            function post_request(url,data,callback){
+
+                if (window.XMLHttpRequest) {
+                    // code for modern browsers
+                    xhttp = new XMLHttpRequest();
+                } else {
+                    // code for old IE browsers
+                    xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        callback(this.response);
+                }
+                };
+                xhttp.open("POST", url, true);
+                //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhttp.send(data);
+            }
+            
+    </script>
+</body>
+  
+</html>

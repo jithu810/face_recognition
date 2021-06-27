@@ -1,0 +1,40 @@
+#landing_background{
+    position: absolute;
+    top: -5rem;
+    z-index: -1;
+    height: calc(100% + 5rem);
+    width: 100%;
+    object-fit: cover;
+    object-position: 0% 0%;
+}
+body{
+    margin: 0;
+}
+.verify_button{
+    position: absolute;
+    width: fit-content;
+    font-weight: 700;
+    top: 75%;
+    left: 50%;
+    text-decoration: none;
+    transform: translateX(-50%);
+    background-color: #42d9ff;
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    border: solid 2px #5900beba;
+    box-shadow: 0px 0px 20px 9px #464646a1;
+    border-radius: 10px;
+    transition: background-color 200ms ease-in-out;
+}
+
+.verify_button:hover{
+    background-color: #fff;
+}
+
+@media only screen and (min-width: 800px) {
+    .verify_button{
+        left: 70%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
